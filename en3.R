@@ -2,18 +2,36 @@
 library(ggplot2)
 library(readxl)
 
-# Reading the Excel data
+# Reading the data from the CSV file
 data <- read.csv("C:\\Users\\alves\\OneDrive\\ec3\\spinosus_data.csv", sep = ";")
 
-# Convert 'Diet' to a factor for regression analysis
-data$Diet <- as.factor(data$Diet)
+# Convert 'Diet' to a factor and set the levels to ensure the desired order
+data$Diet <- factor(data$Diet, levels = c("Animal", "Plant", "Mixed"))
 
 # Generalized Linear Model (GLM) for Regression Analysis
 glm_model <- glm(size46 ~ Temp + Diet, data = data)
+
+# Print the summary of the model
 print(summary(glm_model))
 
+#####################################################################
+# Example: Predict the size of tadpoles at 15°C for each diet
+# Create a new data frame for prediction
+predict_data <- data.frame(Temp = rep(15, length(levels(data$Diet))),
+                           Diet = levels(data$Diet))
+
+# Predict the sizes
+predicted_sizes <- predict(glm_model, newdata = predict_data, type = "response")
+
+# Combine the prediction with the diet for easier interpretation
+predicted_results <- data.frame(Diet = levels(data$Diet), PredictedSize = predicted_sizes)
+
+# Print the predicted results
+print(predicted_results)
 # K-means Clustering for Multivariate Analysis
 # Selecting relevant columns for clustering
+
+#################################################################################
 cluster_data <- data[, c("weight_i", "sizeBL", "SizeTT", "weight46", "size46")]
 
 # Performing K-means clustering
@@ -34,35 +52,3 @@ pca_result <- prcomp(cluster_data, center = TRUE, scale. = TRUE)
 
 # Plotting the PCA results
 plot(pca_result, type = "l")
-
-# Load necessary libraries
-library(ggplot2)
-library(readxl)
-
-# Reading the data from an Excel file
-data <- read.csv("C:\\Users\\alves\\OneDrive\\ec3\\spinosus_data.csv", sep = ";")
-
-# Convert 'Diet' to a factor and set 'Animal' as the reference level explicitly
-data$Diet <- relevel(factor(data$Diet), ref = "Animal")
-
-# Generalized Linear Model (GLM) for Regression Analysis
-glm_model <- glm(size46 ~ Temp + Diet, data = data)
-print(summary(glm_model))
-
-# Plotting the effect of Temperature on Size at Stage 46
-ggplot(data, aes(x = Temp, y = size46)) +
-  geom_point(aes(color = Diet)) +
-  geom_smooth(method = "lm", aes(color = Diet)) +
-  theme_minimal() +
-  labs(title = "Effect of Temperature on Size at Stage 46",
-       x = "Temperature (°C)",
-       y = "Size at Stage 46")
-
-# Plotting the effect of Diet on Size at Stage 46
-ggplot(data, aes(x = Diet, y = size46)) +
-  geom_boxplot() +
-  theme_minimal() +
-  labs(title = "Effect of Diet on Size at Stage 46",
-       x = "Diet",
-       y = "Size at Stage 46")
-
